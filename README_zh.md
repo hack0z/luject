@@ -1,13 +1,13 @@
 <div align="center">
 
-  <h1>app_injector</h1>
+  <h1>luject</h1>
 
   <div>
-    <a href="https://github.com/lanoox/app_injector/releases">
-      <img src="https://img.shields.io/github/release/lanoox/app_injector.svg?style=flat-square" alt="Github All Releases" />
+    <a href="https://github.com/lanoox/luject/releases">
+      <img src="https://img.shields.io/github/release/lanoox/luject.svg?style=flat-square" alt="Github All Releases" />
     </a>
-    <a href="https://github.com/lanoox/app_injector/blob/master/LICENSE.md">
-      <img src="https://img.shields.io/github/license/lanoox/app_injector.svg?colorB=f48041&style=flat-square" alt="license" />
+    <a href="https://github.com/lanoox/luject/blob/master/LICENSE.md">
+      <img src="https://img.shields.io/github/license/lanoox/luject.svg?colorB=f48041&style=flat-square" alt="license" />
     </a>
   </div>
   <div>
@@ -28,12 +28,12 @@
     </a>
   </div>
 
-  <p>Inject dynamic library to application</p>
+  <p>A static injector of dynamic library for application</p>
 </div>
 
 ## 简介
 
-app_injector是一个针对应用程序的动态库注入器，目前支持以下应用程序的注入：
+luject是一个可以将动态库静态注入到指定应用程序包的工具，目前支持以下应用程序的注入：
 
 * Android APK
 
@@ -48,8 +48,8 @@ app_injector是一个针对应用程序的动态库注入器，目前支持以�
 
 * [在线文档](https://xmake.io/#/zh-cn/getting_started)
 * [项目主页](https://xmake.io/#/zh-cn/)
-* [Github](https://github.com/lanoox/app_injector)
-* [Gitee](https://gitee.com/lanoox/app_injector)
+* [Github](https://github.com/lanoox/luject)
+* [Gitee](https://gitee.com/lanoox/luject)
 
 ## 准备工作
 
@@ -70,7 +70,7 @@ $ xmake install
 ## 使用
 
 ```console
-$ app_injector app.apk libtest.so
+$ luject app.apk libtest.so
 ```
 
 ## 联系方式
@@ -84,7 +84,7 @@ $ app_injector app.apk libtest.so
 
 ## 支持项目
 
-app_injector项目属于个人开源项目，它的发展需要您的帮助，如果您愿意支持xmake-gradle项目的开发，欢迎为其捐赠，支持它的发展。 🙏 [[支持此项目](https://opencollective.com/xmake#backer)]
+luject项目属于个人开源项目，它的发展需要您的帮助，如果您愿意支持xmake-gradle项目的开发，欢迎为其捐赠，支持它的发展。 🙏 [[支持此项目](https://opencollective.com/xmake#backer)]
 
 <a href="https://opencollective.com/xmake#backers" target="_blank"><img src="https://opencollective.com/xmake/backers.svg?width=890"></a>
 

@@ -1,4 +1,4 @@
-/*!A dynamic library injector for application
+/*!A static injector of dynamic library for application
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,5 +62,5 @@ tb_int_t main(tb_int_t argc, tb_char_t** argv)
 #else
     tb_char_t const* luaopts = "-D";
 #endif
-    return xm_engine_run_lua("app_injector", argc, argv, lni_initalizer, luaopts);
+    return xm_engine_run_lua("luject", argc, argv, lni_initalizer, luaopts);
 }

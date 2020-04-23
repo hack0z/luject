@@ -1,12 +1,12 @@
 <div align="center">
-  <h1>app_injector</h1>
+  <h1>luject</h1>
 
   <div>
-    <a href="https://github.com/lanoox/app_injector/releases">
-      <img src="https://img.shields.io/github/release/lanoox/app_injector.svg?style=flat-square" alt="Github All Releases" />
+    <a href="https://github.com/lanoox/luject/releases">
+      <img src="https://img.shields.io/github/release/lanoox/luject.svg?style=flat-square" alt="Github All Releases" />
     </a>
-    <a href="https://github.com/lanoox/app_injector/blob/master/LICENSE.md">
-      <img src="https://img.shields.io/github/license/lanoox/app_injector.svg?colorB=f48041&style=flat-square" alt="license" />
+    <a href="https://github.com/lanoox/luject/blob/master/LICENSE.md">
+      <img src="https://img.shields.io/github/license/lanoox/luject.svg?colorB=f48041&style=flat-square" alt="license" />
     </a>
   </div>
   <div>
@@ -27,12 +27,12 @@
     </a>
   </div>
 
-  <p>Inject dynamic library to application</p>
+  <p>A static injector of dynamic library for application</p>
 </div>
 
 ## Introduction ([中文](/README_zh.md))
 
-app_injector is a dynamic library injector for application. It support the following applications:
+luject is a static injector of dynamic library for application. It support the following applications:
 
 * Android APK
 
@@ -47,8 +47,8 @@ If you want to know more, please refer to:
 
 * [Documents](https://xmake.io/#/home)
 * [HomePage](https://xmake.io)
-* [Github](https://github.com/lanoox/app_injector)
-* [Gitee](https://gitee.com/lanoox/app_injector)
+* [Github](https://github.com/lanoox/luject)
+* [Gitee](https://gitee.com/lanoox/luject)
 
 ## Prerequisites
 
@@ -69,7 +69,7 @@ $ xmake install
 ## Usage
 
 ```console
-$ app_injector app.apk libtest.so
+$ luject app.apk libtest.so
 ```
 
 ## Contacts
