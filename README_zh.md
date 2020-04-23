@@ -84,7 +84,7 @@ $ app_injector app.apk libtest.so
 
 ## 支持项目
 
-xmake-gradle项目属于个人开源项目，它的发展需要您的帮助，如果您愿意支持xmake-gradle项目的开发，欢迎为其捐赠，支持它的发展。 🙏 [[支持此项目](https://opencollective.com/xmake#backer)]
+app_injector项目属于个人开源项目，它的发展需要您的帮助，如果您愿意支持xmake-gradle项目的开发，欢迎为其捐赠，支持它的发展。 🙏 [[支持此项目](https://opencollective.com/xmake#backer)]
 
 <a href="https://opencollective.com/xmake#backers" target="_blank"><img src="https://opencollective.com/xmake/backers.svg?width=890"></a>
 
