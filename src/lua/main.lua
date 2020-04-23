@@ -20,10 +20,24 @@
 import("core.base.option")
 import("lib.lni.elf")
 
+-- the options
+local options =
+{
+    {'i', "input",     "kv", nil, "Set the input program path."}
+,   {'o', "output",    "kv", nil, "Set the output program path."}
+,   {nil, "libraries", "v",  nil, "Set all injected dynamic libraries path list."}
+}
+
+-- the main entry
 function main ()
-    elf.add_library("liba.so", "libb.so")
-    local argv = option.get("arguments")
-    if argv then
-        print(argv)
+
+    -- parse arguments
+    local argv = option.get("arguments") or {}
+    local opts = option.parse(argv, options, "Statically inject dynamic library to the given program."
+                                           , ""
+                                           , "Usage: luject [options] libraries")
+    if not opts.input or not opts.libraries then
+        opts.help()
+        return
     end
 end
