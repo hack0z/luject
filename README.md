@@ -66,6 +66,12 @@ $ xmake
 $ xmake install
 ```
 
+## Usage
+
+```console
+$ app_injector app.apk libtest.so
+```
+
 ## Contacts
 
 * Email：[waruqi@gmail.com](mailto:waruqi@gmail.com)

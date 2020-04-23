@@ -51,20 +51,26 @@ app_injector是一个针对应用程序的动态库注入器，目前支持以�
 * [Github](https://github.com/lanoox/app_injector)
 * [Gitee](https://gitee.com/lanoox/app_injector)
 
-## Prerequisites
+## 准备工作
 
-XMake installed on the system. Available [here](https://github.com/xmake-io/xmake).
+我们需要先安装[xmake](https://github.com/xmake-io/xmake)来编译此项目。
 
-## Build
+## 编译
 
 ```console
 $ xmake
 ```
 
-## Installation
+## 安装
 
 ```console
 $ xmake install
+```
+
+## 使用
+
+```console
+$ app_injector app.apk libtest.so
 ```
 
 ## 联系方式
