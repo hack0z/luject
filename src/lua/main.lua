@@ -18,9 +18,13 @@
 -- @file        main.lua
 --
 import("core.base.option")
+import("core.project.config")
 import("utils.archive")
+import("utils.ipa.resign", {alias = "ipa_resign"})
+import("detect.sdks.find_xcode")
 import("lib.detect.find_tool")
 import("lib.detect.find_program")
+import("lib.detect.find_directory")
 import("lib.lni.pe")
 import("lib.lni.elf")
 import("lib.lni.macho")
@@ -62,45 +66,55 @@ function _get_zipalign(apkfile)
 end
 
 -- do inject for elf program
-function _inject_elf(inputfile, outputfile, libraries, opts)
+function _inject_elf(inputfile, outputfile, libraries)
     elf.add_libraries(inputfile, outputfile, libraries)
 end
 
 -- do inject for macho program
-function _inject_macho(inputfile, outputfile, libraries, opts)
+function _inject_macho(inputfile, outputfile, libraries)
     macho.add_libraries(inputfile, outputfile, libraries)
 end
 
 -- do inject for pe program
-function _inject_pe(inputfile, outputfile, libraries, opts)
+function _inject_pe(inputfile, outputfile, libraries)
     pe.add_libraries(inputfile, outputfile, libraries)
 end
 
--- get runner
-function _get_runner(opts)
-    return (opts.verbose and os.execv or os.runv)
-end
-
 -- resign apk
-function _resign_apk(inputfile, outputfile, opts)
+function _resign_apk(inputfile, outputfile)
 
     -- trace
     cprint("${magenta}resign %s", path.filename(inputfile))
 
     -- do resign
     local jarsigner = _get_jarsigner()
-    local runv = _get_runner(opts)
     local alias = "test"
     local storepass = "1234567890"
     local argv = {"-keystore", path.join(_get_resources_dir(), "sign.keystore"), "-signedjar", outputfile, "-digestalg", "SHA1", "-sigalg", "MD5withRSA", inputfile, alias, "--storepass", storepass}
-    if opts.verbose then
+    if option.get("verbose") then
         table.insert(argv, "-verbose")
     end
-    runv(jarsigner, argv)
+    os.vrunv(jarsigner, argv)
 end
 
+-- resign app
+function _resign_app(appdir)
+
+    -- trace
+    cprint("${magenta}resign %s", path.filename(appdir))
+
+    -- find xcode for codesign_allocate
+    local xcode = find_xcode(nil, {verbose = option.get("verbose")})
+    if xcode then
+        config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
+    end
+
+    -- do resign
+    ipa_resign(appdir)
+end 
+
 -- optimize apk
-function _optimize_apk(apkfile, opts)
+function _optimize_apk(apkfile)
     local zipalign = _get_zipalign(apkfile)
     if zipalign then
 
@@ -109,15 +123,14 @@ function _optimize_apk(apkfile, opts)
 
         -- do optimize
         local tmpfile = os.tmpfile()
-        local runv = _get_runner(opts)
-        runv(zipalign, {"-f", "-v", "4", apkfile, tmpfile})
+        os.vrunv(zipalign, {"-f", "-v", "4", apkfile, tmpfile})
         os.cp(tmpfile, apkfile)
         os.tryrm(tmpfile)
     end
 end
 
 -- do inject for apk program
-function _inject_apk(inputfile, outputfile, libraries, opts)
+function _inject_apk(inputfile, outputfile, libraries)
 
     -- get zip
     local zip = assert(find_tool("zip"), "zip not found!")
@@ -130,116 +143,186 @@ function _inject_apk(inputfile, outputfile, libraries, opts)
 
     -- trace
     print("extract %s", path.filename(inputfile))
-    if opts.verbose then
-        print(" -> %s", tmpdir)
-    end
+    vprint(" -> %s", tmpdir)
 
     -- extract apk
-    if archive.extract(inputfile, tmpdir, {extension = ".zip"}) then
+    if not archive.extract(inputfile, tmpdir, {extension = ".zip"}) then
+        raise("extract failed!")
+    end
 
-        -- remove META-INF
-        os.tryrm(path.join(tmpdir, "META-INF"))
+    -- remove META-INF
+    os.tryrm(path.join(tmpdir, "META-INF"))
 
-        -- get arch and library directory
-        local arch = "armeabi-v7a"
-        local result = try {function () return os.iorunv("file", {inputfile}) end}
-        if result and result:find("aarch64", 1, true) then
-            arch = "arm64-v8a"
-        end
-        local libdir = path.join(tmpdir, "lib", arch)
-        assert(os.isdir(libdir), "%s not found!", libdir)
+    -- get arch and library directory
+    local arch = "armeabi-v7a"
+    local result = try {function () return os.iorunv("file", {inputfile}) end}
+    if result and result:find("aarch64", 1, true) then
+        arch = "arm64-v8a"
+    end
+    local libdir = path.join(tmpdir, "lib", arch)
+    assert(os.isdir(libdir), "%s not found!", libdir)
 
-        -- inject libraries to 'lib/arch/*.so'
-        local libnames = {}
-        for _, library in ipairs(libraries) do
-            table.insert(libnames, path.filename(library))
-        end
-        for _, libfile in ipairs(os.files(path.join(libdir, (opts.pattern or "*") .. ".so"))) do
-            print("inject to %s", path.filename(libfile))
-            elf.add_libraries(libfile, libfile, libnames)
-        end
+    -- inject libraries to 'lib/arch/*.so'
+    local libnames = {}
+    for _, library in ipairs(libraries) do
+        table.insert(libnames, path.filename(library))
+    end
+    for _, libfile in ipairs(os.files(path.join(libdir, (option.get("pattern") or "*") .. ".so"))) do
+        print("inject to %s", path.filename(libfile))
+        elf.add_libraries(libfile, libfile, libnames)
+    end
 
-        -- copy libraries to 'lib/arch/'
-        for _, library in ipairs(libraries) do
-            assert(os.isfile(library), "%s not found!", library)
-            print("install %s", path.filename(library))
-            os.cp(library, libdir)
-        end
+    -- copy libraries to 'lib/arch/'
+    for _, library in ipairs(libraries) do
+        assert(os.isfile(library), "%s not found!", library)
+        print("install %s", path.filename(library))
+        os.cp(library, libdir)
     end
 
     -- archive apk
     local zip_argv = {"-r"}
-    local runv = _get_runner(opts)
     table.insert(zip_argv, tmpapk)
     table.insert(zip_argv, ".")
     os.cd(tmpdir)
-    runv(zip.program, zip_argv)
+    os.vrunv(zip.program, zip_argv)
     os.cd("-")
 
     -- resign apk
-    _resign_apk(tmpapk, outputfile, opts)
+    _resign_apk(tmpapk, outputfile)
 
     -- optimize apk
-    _optimize_apk(outputfile, opts)
+    _optimize_apk(outputfile)
 end
 
 -- do inject for ipa program
-function _inject_ipa(inputfile, outputfile, libraries, opts)
-    print("not implement!")
+function _inject_ipa(inputfile, outputfile, libraries)
+
+    -- get zip
+    local zip = assert(find_tool("zip"), "zip not found!")
+
+    -- get the tmp directory
+    local tmpdir = path.join(os.tmpdir(inputfile), path.basename(inputfile) .. ".tmp")
+    local tmpipa = path.join(os.tmpdir(inputfile), path.basename(inputfile) .. ".ipa")
+    os.tryrm(tmpdir)
+    os.tryrm(tmpipa)
+
+    -- trace
+    print("extract %s", path.filename(inputfile))
+    vprint(" -> %s", tmpdir)
+
+    -- extract ipa
+    if not archive.extract(inputfile, tmpdir, {extension = ".zip"}) then
+        raise("extract failed!")
+    end
+
+    -- get .app directory
+    local appdir = find_directory("Payload/*.app", tmpdir)
+
+    -- remove _CodeSignature
+    os.tryrm(path.join(appdir, "_CodeSignature"))
+
+    -- get binary
+    local binaryfile
+    for _, filepath in ipairs(os.files(path.join(appdir, "*"))) do
+        local results = try { function () return os.iorunv("file", {filepath}) end}
+        if results and results:find("Mach-O", 1, true) then
+            binaryfile = filepath
+            break
+        end
+    end
+    assert(binaryfile, "image file not found!")
+
+    -- inject libraries to the image file
+    local libnames = {}
+    for _, library in ipairs(libraries) do
+        table.insert(libnames, path.filename(library))
+    end
+    print("inject to %s", path.filename(binaryfile))
+    macho.add_libraries(binaryfile, binaryfile, libnames)
+
+    -- copy libraries to .app directory
+    for _, library in ipairs(libraries) do
+        assert(os.isfile(library), "%s not found!", library)
+        print("install %s", path.filename(library))
+        os.cp(library, appdir)
+    end
+
+    -- resign app
+    _resign_app(appdir)
+
+    -- archive ipa
+    local zip_argv = {"-r"}
+    table.insert(zip_argv, outputfile)
+    table.insert(zip_argv, ".")
+    os.cd(tmpdir)
+    os.vrunv(zip.program, zip_argv)
 end
 
 -- do inject
-function _inject(inputfile, outputfile, libraries, opts)
+function _inject(inputfile, outputfile, libraries)
     if inputfile:endswith(".so") then
-        _inject_elf(inputfile, outputfile, libraries, opts)
+        _inject_elf(inputfile, outputfile, libraries)
     elseif inputfile:endswith(".dylib") then
-        _inject_macho(inputfile, outputfile, libraries, opts)
+        _inject_macho(inputfile, outputfile, libraries)
     elseif inputfile:endswith(".exe") then
-        _inject_pe(inputfile, outputfile, libraries, opts)
+        _inject_pe(inputfile, outputfile, libraries)
     elseif inputfile:endswith(".dll") then
-        _inject_pe(inputfile, outputfile, libraries, opts)
+        _inject_pe(inputfile, outputfile, libraries)
     elseif inputfile:endswith(".apk") then
-        _inject_apk(inputfile, outputfile, libraries, opts)
+        _inject_apk(inputfile, outputfile, libraries)
     elseif inputfile:endswith(".ipa") then
-        _inject_ipa(inputfile, outputfile, libraries, opts)
+        _inject_ipa(inputfile, outputfile, libraries)
     else
         local result = try {function () return os.iorunv("file", {inputfile}) end}
         if result and result:find("ELF", 1, true) then
-            _inject_elf(inputfile, outputfile, libraries, opts)
+            _inject_elf(inputfile, outputfile, libraries)
         elseif result and result:find("Mach-O", 1, true) then
-            _inject_macho(inputfile, outputfile, libraries, opts)
+            _inject_macho(inputfile, outputfile, libraries)
         end
+    end
+end
+
+-- init options
+function _init_options()
+
+    -- parse arguments
+    local argv = option.get("arguments") or {}
+    option.save()
+    local opts = option.parse(argv, options, "Statically inject dynamic library to the given program."
+                                           , ""
+                                           , "Usage: luject [options] libraries")
+
+    -- save options
+    for name, value in pairs(opts) do
+        option.set(name, value)
     end
 end
 
 -- the main entry
 function main ()
 
-    -- parse arguments
-    local argv = option.get("arguments") or {}
-    local opts = option.parse(argv, options, "Statically inject dynamic library to the given program."
-                                           , ""
-                                           , "Usage: luject [options] libraries")
-    if not opts.input or not opts.libraries then
-        opts.help()
-        return
+    -- init options
+    _init_options()
+
+    -- show help
+    local help = option.get("help")
+    local inputfile = option.get("input")
+    local libraries = option.get("libraries")
+    if not inputfile or not libraries then
+        return help()
     end
 
     -- get input file
-    local inputfile = opts.input
     assert(os.isfile(inputfile), "%s not found!", inputfile)
 
     -- get output file
-    local outputfile = opts.output
+    local outputfile = option.get("output")
     if not outputfile then
         outputfile = path.join(path.directory(inputfile), path.basename(inputfile) .. "_injected" .. path.extension(inputfile))
     end
 
-    -- get libraries
-    local libraries = opts.libraries
-
     -- do inject
-    _inject(inputfile, outputfile, libraries, opts)
+    _inject(inputfile, outputfile, libraries)
 
     -- trace
     cprint("${bright green}inject ok!")
