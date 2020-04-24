@@ -36,9 +36,6 @@
 luject是一个可以将动态库静态注入到指定应用程序包的工具，目前支持以下应用程序的注入：
 
 * Android APK
-
-将来会支持：
-
 * iPhoneOS IPA 
 * Windows可执行程序
 * MacOS可执行程序
@@ -70,7 +67,13 @@ $ xmake install
 ## 使用
 
 ```console
-$ luject app.apk libtest.so
+$ luject -i app.apk lib1.so lib2.so
+$ luject -i app.ipa lib1.dylib lib2.dylib
+$ luject -i liba.so lib1.so lib2.so
+$ luject -i app.exe lib1.dll lib2.dll
+$ luject -i a.dll lib1.dll lib2.dll
+$ luject -i liba.dylib lib1.dylib lib2.dyib
+$ luject -i bin lib1.so lib2.so
 ```
 
 ## 开发

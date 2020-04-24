@@ -35,9 +35,6 @@
 luject is a static injector of dynamic library for application. It support the following applications:
 
 * Android APK
-
-It will support in the future:
-
 * iPhoneOS IPA
 * Windows Program
 * Linux Program
@@ -69,7 +66,13 @@ $ xmake install
 ## Usage
 
 ```console
-$ luject app.apk libtest.so
+$ luject -i app.apk lib1.so lib2.so
+$ luject -i app.ipa lib1.dylib lib2.dylib
+$ luject -i liba.so lib1.so lib2.so
+$ luject -i app.exe lib1.dll lib2.dll
+$ luject -i a.dll lib1.dll lib2.dll
+$ luject -i liba.dylib lib1.dylib lib2.dyib
+$ luject -i bin lib1.so lib2.so
 ```
 
 ## Development

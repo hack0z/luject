@@ -31,13 +31,34 @@
 // pe.add_libraries("x.dll", {"a.dll", "b.dll"})
 static tb_int_t lni_pe_add_libraries(lua_State* lua)
 {
-    std::unique_ptr<LIEF::PE::Binary const> pe_binary;
     try 
     {
-        pe_binary = std::unique_ptr<LIEF::PE::Binary const>{LIEF::PE::Parser::parse("")};
+        // get arguments
+        tb_char_t const* inputfile = luaL_checkstring(lua, 1);
+        tb_char_t const* outputfile = luaL_checkstring(lua, 2);
+        if (!inputfile || !outputfile || !lua_istable(lua, 3)) throw "invalid arguments!";
+
+        // add libraries 
+        tb_size_t n = lua_objlen(lua, 3);
+        if (n > 0)
+        {
+            auto pe_binary = std::unique_ptr<LIEF::PE::Binary>{LIEF::PE::Parser::parse(inputfile)};
+            for (tb_size_t i = 1; i <= n; i++)
+            {
+                lua_pushnumber(lua, (tb_int_t)i);
+                lua_rawget(lua, 3);
+                tb_char_t const* library = luaL_checkstring(lua, -1);
+                if (library) pe_binary->add_library(library);
+                lua_pop(lua, 1);
+            }
+            pe_binary->write(outputfile);
+        }
     }
-    catch (LIEF::exception const&) 
+    catch (std::exception const& e) 
     {
+        lua_pushboolean(lua, tb_false);
+        lua_pushstring(lua, e.what());
+        return 2;
     }
     lua_pushboolean(lua, tb_true);
     return 1;
@@ -46,13 +67,34 @@ static tb_int_t lni_pe_add_libraries(lua_State* lua)
 // elf.add_libraries("libx.so", {"liba.so", "libb.so"})
 static tb_int_t lni_elf_add_libraries(lua_State* lua)
 {
-    std::unique_ptr<LIEF::ELF::Binary const> elf_binary;
     try 
     {
-        elf_binary = std::unique_ptr<LIEF::ELF::Binary const>{LIEF::ELF::Parser::parse("")};
+        // get arguments
+        tb_char_t const* inputfile = luaL_checkstring(lua, 1);
+        tb_char_t const* outputfile = luaL_checkstring(lua, 2);
+        if (!inputfile || !outputfile || !lua_istable(lua, 3)) throw "invalid arguments!";
+
+        // add libraries 
+        tb_size_t n = lua_objlen(lua, 3);
+        if (n > 0)
+        {
+            auto elf_binary = std::unique_ptr<LIEF::ELF::Binary>{LIEF::ELF::Parser::parse(inputfile)};
+            for (tb_size_t i = 1; i <= n; i++)
+            {
+                lua_pushnumber(lua, (tb_int_t)i);
+                lua_rawget(lua, 3);
+                tb_char_t const* library = luaL_checkstring(lua, -1);
+                if (library) elf_binary->add_library(library);
+                lua_pop(lua, 1);
+            }
+            elf_binary->write(outputfile);
+        }
     }
-    catch (LIEF::exception const&) 
+    catch (std::exception const& e) 
     {
+        lua_pushboolean(lua, tb_false);
+        lua_pushstring(lua, e.what());
+        return 2;
     }
     lua_pushboolean(lua, tb_true);
     return 1;
@@ -61,13 +103,37 @@ static tb_int_t lni_elf_add_libraries(lua_State* lua)
 // macho.add_libraries("libx.so", {"liba.dylib", "libb.dylib"})
 static tb_int_t lni_macho_add_libraries(lua_State* lua)
 {
-    std::unique_ptr<LIEF::MachO::FatBinary const> macho_binary;
     try 
     {
-        macho_binary = std::unique_ptr<LIEF::MachO::FatBinary const>{LIEF::MachO::Parser::parse("")};
+        // get arguments
+        tb_char_t const* inputfile = luaL_checkstring(lua, 1);
+        tb_char_t const* outputfile = luaL_checkstring(lua, 2);
+        if (!inputfile || !outputfile || !lua_istable(lua, 3)) throw "invalid arguments!";
+
+        // add libraries 
+        tb_size_t n = lua_objlen(lua, 3);
+        if (n > 0)
+        {
+            auto macho_binary = std::unique_ptr<LIEF::MachO::FatBinary>{LIEF::MachO::Parser::parse(inputfile)};
+            for (auto it = macho_binary->begin(); it != macho_binary->end(); ++it)
+            {
+                for (tb_size_t i = 1; i <= n; i++)
+                {
+                    lua_pushnumber(lua, (tb_int_t)i);
+                    lua_rawget(lua, 3);
+                    tb_char_t const* library = luaL_checkstring(lua, -1);
+                    if (library) it->add_library(library);
+                    lua_pop(lua, 1);
+                }
+            }
+            macho_binary->write(outputfile);
+        }
     }
-    catch (LIEF::exception const&) 
+    catch (std::exception const& e) 
     {
+        lua_pushboolean(lua, tb_false);
+        lua_pushstring(lua, e.what());
+        return 2;
     }
     lua_pushboolean(lua, tb_true);
     return 1;

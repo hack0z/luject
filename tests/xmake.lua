@@ -6,7 +6,7 @@ target("sub")
 
 target("add")
     set_default(false)
-    add_deps("sub")
+    add_deps("sub", {inherit = false})
     set_kind("shared")
     add_files("add.c")
     after_build(function (target, opt)
@@ -16,11 +16,14 @@ target("add")
         local luject = target:dep("luject")
         os.setenv("XMAKE_MODULES_DIR", path.join(luject:scriptdir(), "src"))
         os.setenv("XMAKE_PROGRAM_DIR", path.join(path.directory(luject:pkg("libxmake"):get("linkdirs")), "share", "xmake"))
-        os.vrunv(luject:targetfile(), {"-i", target:targetfile(), target:dep("sub"):targetfile()})
+
+        -- inject libsub to libadd
+        os.vrunv(luject:targetfile(), {"-i", target:targetfile(), "-o", target:targetfile(), path.filename(target:dep("sub"):targetfile())})
     end)
 
 target("test")
     set_default(false)
     set_kind("binary")
     add_deps("add")
+    add_deps("sub", {inherit = false}) -- we only add libadd/rpath to test
     add_files("test.c")

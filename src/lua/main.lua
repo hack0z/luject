@@ -32,20 +32,17 @@ local options =
 
 -- do inject for elf program
 function _inject_elf(inputfile, outputfile, libraries)
-    os.cp(inputfile, outputfile)
-    elf.add_libraries(outputfile, libraries)
+    elf.add_libraries(inputfile, outputfile, libraries)
 end
 
 -- do inject for macho program
 function _inject_macho(inputfile, outputfile, libraries)
-    os.cp(inputfile, outputfile)
-    macho.add_libraries(outputfile, libraries)
+    macho.add_libraries(inputfile, outputfile, libraries)
 end
 
 -- do inject for pe program
 function _inject_pe(inputfile, outputfile, libraries)
-    os.cp(inputfile, outputfile)
-    pe.add_libraries(outputfile, libraries)
+    pe.add_libraries(inputfile, outputfile, libraries)
 end
 
 -- do inject for apk program
