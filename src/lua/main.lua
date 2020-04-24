@@ -30,6 +30,10 @@ local options =
 {
     {'i', "input",     "kv", nil, "Set the input program path."}
 ,   {'o', "output",    "kv", nil, "Set the output program path."}
+,   {'p', "pattern",   "kv", nil, "Inject to the libraries given pattern (only for apk).",
+                                  "  e.g. ",
+                                  "    - luject -i app.apk -p libtest liba.so",
+                                  "    - luject -i app.apk -p 'libtest_*' liba.so"}
 ,   {'v', "verbose",   "k",  nil, "Enable verbose output."}
 ,   {nil, "libraries", "vs", nil, "Set all injected dynamic libraries path list."}
 }
@@ -150,7 +154,7 @@ function _inject_apk(inputfile, outputfile, libraries, opts)
         for _, library in ipairs(libraries) do
             table.insert(libnames, path.filename(library))
         end
-        for _, libfile in ipairs(os.files(path.join(libdir, "*.so"))) do
+        for _, libfile in ipairs(os.files(path.join(libdir, (opts.pattern or "*") .. ".so"))) do
             print("inject to %s", path.filename(libfile))
             elf.add_libraries(libfile, libfile, libnames)
         end

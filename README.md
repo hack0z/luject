@@ -82,7 +82,7 @@ $ luject -i bin lib1.so lib2.so
 Use frida tools to dynamically analyze the application. For details, see: [frida](https://github.com/frida/frida)
 
 ```console
-$ luject -i app.apk /tmp/libfrida-gadget.so
+$ luject -i app.apk -p libtest /tmp/libfrida-gadget.so
 ```
 
 refs: [How to use frida on a non-rooted device](https://lief.quarkslab.com/doc/latest/tutorials/09_frida_lief.html)

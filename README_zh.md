@@ -83,7 +83,7 @@ $ luject -i bin lib1.so lib2.so
 使用frida系列工具对app进行动态分析，相关详情见：[frida](https://github.com/frida/frida)
 
 ```console
-$ luject -i app.apk /tmp/libfrida-gadget.so
+$ luject -i app.apk libtest /tmp/libfrida-gadget.so
 ```
 
 参考文档: [How to use frida on a non-rooted device](https://lief.quarkslab.com/doc/latest/tutorials/09_frida_lief.html)
