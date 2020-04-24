@@ -43,6 +43,14 @@ function _get_resources_dir()
     return resourcesdir
 end
 
+-- get jarsigner
+function _get_jarsigner()
+    local java_home = assert(os.getenv("JAVA_HOME"), "$JAVA_HOME not found!")
+    local jarsigner = path.join(java_home, "bin", "jarsigner" .. (is_host("windows") and ".exe" or ""))
+    assert(os.isfile(jarsigner), "%s not found!", jarsigner)
+    return jarsigner
+end
+
 -- do inject for elf program
 function _inject_elf(inputfile, outputfile, libraries, opts)
     elf.add_libraries(inputfile, outputfile, libraries)
@@ -58,6 +66,24 @@ function _inject_pe(inputfile, outputfile, libraries, opts)
     pe.add_libraries(inputfile, outputfile, libraries)
 end
 
+-- resign apk
+function _resign_apk(inputfile, outputfile, opts)
+
+    -- trace
+    print("resign %s", path.filename(inputfile))
+
+    -- do resign
+    local jarsigner = _get_jarsigner()
+    local run = (opts.verbose and os.execv or os.runv)
+    local alias = "test"
+    local storepass = "1234567890"
+    local argv = {"-keystore", path.join(_get_resources_dir(), "sign.keystore"), "-signedjar", outputfile, "-digestalg", "SHA1", "-sigalg", "MD5withRSA", inputfile, alias, "--storepass", storepass}
+    if opts.verbose then
+        table.insert(argv, "-verbose")
+    end
+    run(jarsigner, argv)
+end
+
 -- do inject for apk program
 function _inject_apk(inputfile, outputfile, libraries, opts)
 
@@ -65,8 +91,10 @@ function _inject_apk(inputfile, outputfile, libraries, opts)
     local zip = assert(find_tool("zip"), "zip not found!")
 
     -- get the tmp directory
-    local tmpdir = path.join(os.tmpdir(inputfile), path.filename(inputfile) .. ".tmp")
+    local tmpdir = path.join(os.tmpdir(inputfile), path.basename(inputfile) .. ".tmp")
+    local tmpapk = path.join(os.tmpdir(inputfile), path.basename(inputfile) .. ".apk")
     os.tryrm(tmpdir)
+    os.tryrm(tmpapk)
 
     -- trace
     print("extract %s", path.filename(inputfile))
@@ -76,6 +104,9 @@ function _inject_apk(inputfile, outputfile, libraries, opts)
 
     -- extract apk
     if archive.extract(inputfile, tmpdir, {extension = ".zip"}) then
+
+        -- remove META-INF
+        os.tryrm(path.join(tmpdir, "META-INF"))
 
         -- get arch and library directory
         local arch = "armeabi-v7a"
@@ -107,11 +138,14 @@ function _inject_apk(inputfile, outputfile, libraries, opts)
     -- archive apk
     local zip_argv = {"-r"}
     local run = (opts.verbose and os.execv or os.runv)
-    table.insert(zip_argv, outputfile)
+    table.insert(zip_argv, tmpapk)
     table.insert(zip_argv, ".")
     os.cd(tmpdir)
     run(zip.program, zip_argv)
     os.cd("-")
+
+    -- resign apk
+    _resign_apk(tmpapk, outputfile, opts)
 end
 
 -- do inject for ipa program
