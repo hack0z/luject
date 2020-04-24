@@ -20,6 +20,7 @@
 import("core.base.option")
 import("utils.archive")
 import("lib.detect.find_tool")
+import("lib.detect.find_program")
 import("lib.lni.pe")
 import("lib.lni.elf")
 import("lib.lni.macho")
@@ -51,6 +52,11 @@ function _get_jarsigner()
     return jarsigner
 end
 
+-- get zipalign
+function _get_zipalign(apkfile)
+    return find_program("zipalign", {check = function (program) assert(os.execv(program, {"-c", "4", apkfile}, {try = true}) ~= nil) end})
+end
+
 -- do inject for elf program
 function _inject_elf(inputfile, outputfile, libraries, opts)
     elf.add_libraries(inputfile, outputfile, libraries)
@@ -66,22 +72,44 @@ function _inject_pe(inputfile, outputfile, libraries, opts)
     pe.add_libraries(inputfile, outputfile, libraries)
 end
 
+-- get runner
+function _get_runner(opts)
+    return (opts.verbose and os.execv or os.runv)
+end
+
 -- resign apk
 function _resign_apk(inputfile, outputfile, opts)
 
     -- trace
-    print("resign %s", path.filename(inputfile))
+    cprint("${magenta}resign %s", path.filename(inputfile))
 
     -- do resign
     local jarsigner = _get_jarsigner()
-    local run = (opts.verbose and os.execv or os.runv)
+    local runv = _get_runner(opts)
     local alias = "test"
     local storepass = "1234567890"
     local argv = {"-keystore", path.join(_get_resources_dir(), "sign.keystore"), "-signedjar", outputfile, "-digestalg", "SHA1", "-sigalg", "MD5withRSA", inputfile, alias, "--storepass", storepass}
     if opts.verbose then
         table.insert(argv, "-verbose")
     end
-    run(jarsigner, argv)
+    runv(jarsigner, argv)
+end
+
+-- optimize apk
+function _optimize_apk(apkfile, opts)
+    local zipalign = _get_zipalign(apkfile)
+    if zipalign then
+
+        -- trace
+        cprint("${magenta}optimize %s", path.filename(apkfile))
+
+        -- do optimize
+        local tmpfile = os.tmpfile()
+        local runv = _get_runner(opts)
+        runv(zipalign, {"-f", "-v", "4", apkfile, tmpfile})
+        os.cp(tmpfile, apkfile)
+        os.tryrm(tmpfile)
+    end
 end
 
 -- do inject for apk program
@@ -137,15 +165,18 @@ function _inject_apk(inputfile, outputfile, libraries, opts)
 
     -- archive apk
     local zip_argv = {"-r"}
-    local run = (opts.verbose and os.execv or os.runv)
+    local runv = _get_runner(opts)
     table.insert(zip_argv, tmpapk)
     table.insert(zip_argv, ".")
     os.cd(tmpdir)
-    run(zip.program, zip_argv)
+    runv(zip.program, zip_argv)
     os.cd("-")
 
     -- resign apk
     _resign_apk(tmpapk, outputfile, opts)
+
+    -- optimize apk
+    _optimize_apk(outputfile, opts)
 end
 
 -- do inject for ipa program
