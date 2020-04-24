@@ -33,6 +33,16 @@ local options =
 ,   {nil, "libraries", "vs", nil, "Set all injected dynamic libraries path list."}
 }
 
+-- get resources directory
+function _get_resources_dir()
+    local resourcesdir = path.join(os.scriptdir(), "..", "..", "res")
+    if not os.isdir(resourcesdir) then
+        resourcesdir = path.join(os.programdir(), "res")
+    end
+    assert(resourcesdir, "the resources directory not found!")
+    return resourcesdir
+end
+
 -- do inject for elf program
 function _inject_elf(inputfile, outputfile, libraries, opts)
     elf.add_libraries(inputfile, outputfile, libraries)

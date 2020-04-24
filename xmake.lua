@@ -8,5 +8,6 @@ target("luject")
     add_files("src/lni/*.cpp")
     set_languages("c++11")
     add_packages("libxmake", "lief")
+    add_installfiles("res/*", {prefixdir = "share/luject/res"})
 
 includes("tests")
