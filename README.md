@@ -72,6 +72,22 @@ $ xmake install
 $ luject app.apk libtest.so
 ```
 
+## Development
+
+### Build and run
+
+```console
+$ xmake
+$ xmake run luject -i [input] liba.so libb.so
+```
+
+### Build and run tests
+
+```console
+$ xmake build test
+$ xmake run test
+```
+
 ## Contacts
 
 * Email：[waruqi@gmail.com](mailto:waruqi@gmail.com)
