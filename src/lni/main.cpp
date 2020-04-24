@@ -27,29 +27,78 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implemention
  */
-// elf.add_library("libx.so", "liby.so")
-static tb_int_t lni_elf_add_library(lua_State* lua)
+
+// pe.add_libraries("x.dll", {"a.dll", "b.dll"})
+static tb_int_t lni_pe_add_libraries(lua_State* lua)
 {
-    lua_pushliteral(lua, "hello xmake!");
-    std::unique_ptr<LIEF::ELF::Binary const> elf_binary;
+    std::unique_ptr<LIEF::PE::Binary const> pe_binary;
     try 
     {
-        elf_binary = std::unique_ptr<const LIEF::ELF::Binary>{LIEF::ELF::Parser::parse("")};
+        pe_binary = std::unique_ptr<LIEF::PE::Binary const>{LIEF::PE::Parser::parse("")};
     }
     catch (LIEF::exception const&) 
     {
     }
+    lua_pushboolean(lua, tb_true);
     return 1;
 }
+
+// elf.add_libraries("libx.so", {"liba.so", "libb.so"})
+static tb_int_t lni_elf_add_libraries(lua_State* lua)
+{
+    std::unique_ptr<LIEF::ELF::Binary const> elf_binary;
+    try 
+    {
+        elf_binary = std::unique_ptr<LIEF::ELF::Binary const>{LIEF::ELF::Parser::parse("")};
+    }
+    catch (LIEF::exception const&) 
+    {
+    }
+    lua_pushboolean(lua, tb_true);
+    return 1;
+}
+
+// macho.add_libraries("libx.so", {"liba.dylib", "libb.dylib"})
+static tb_int_t lni_macho_add_libraries(lua_State* lua)
+{
+    std::unique_ptr<LIEF::MachO::FatBinary const> macho_binary;
+    try 
+    {
+        macho_binary = std::unique_ptr<LIEF::MachO::FatBinary const>{LIEF::MachO::Parser::parse("")};
+    }
+    catch (LIEF::exception const&) 
+    {
+    }
+    lua_pushboolean(lua, tb_true);
+    return 1;
+}
+
+// lni initalizer
 static tb_void_t lni_initalizer(xm_engine_ref_t engine, lua_State* lua)
 {
+    // register pe module
+    static luaL_Reg const lni_pe_funcs[] = 
+    {
+        {"add_libraries", lni_pe_add_libraries}
+    ,   {tb_null, tb_null}
+    };
+    xm_engine_register(engine, "pe", lni_pe_funcs);
+
     // register elf module
     static luaL_Reg const lni_elf_funcs[] = 
     {
-        {"add_library", lni_elf_add_library}
+        {"add_libraries", lni_elf_add_libraries}
     ,   {tb_null, tb_null}
     };
     xm_engine_register(engine, "elf", lni_elf_funcs);
+
+    // register macho module
+    static luaL_Reg const lni_macho_funcs[] = 
+    {
+        {"add_libraries", lni_macho_add_libraries}
+    ,   {tb_null, tb_null}
+    };
+    xm_engine_register(engine, "macho", lni_macho_funcs);
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////

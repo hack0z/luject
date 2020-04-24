@@ -18,7 +18,9 @@
 -- @file        main.lua
 --
 import("core.base.option")
+import("lib.lni.pe")
 import("lib.lni.elf")
+import("lib.lni.macho")
 
 -- the options
 local options =
@@ -30,14 +32,20 @@ local options =
 
 -- do inject for elf program
 function _inject_elf(inputfile, outputfile, libraries)
+    os.cp(inputfile, outputfile)
+    elf.add_libraries(outputfile, libraries)
 end
 
 -- do inject for macho program
 function _inject_macho(inputfile, outputfile, libraries)
+    os.cp(inputfile, outputfile)
+    macho.add_libraries(outputfile, libraries)
 end
 
 -- do inject for pe program
 function _inject_pe(inputfile, outputfile, libraries)
+    os.cp(inputfile, outputfile)
+    pe.add_libraries(outputfile, libraries)
 end
 
 -- do inject for apk program
