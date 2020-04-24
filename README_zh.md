@@ -86,6 +86,8 @@ $ luject -i bin lib1.so lib2.so
 $ luject -i app.apk /tmp/libfrida-gadget.so
 ```
 
+参考文档: [How to use frida on a non-rooted device](https://lief.quarkslab.com/doc/latest/tutorials/09_frida_lief.html)
+
 ## 开发
 
 ### 编译运行

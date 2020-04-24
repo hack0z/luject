@@ -85,6 +85,8 @@ Use frida tools to dynamically analyze the application. For details, see: [frida
 $ luject -i app.apk /tmp/libfrida-gadget.so
 ```
 
+refs: [How to use frida on a non-rooted device](https://lief.quarkslab.com/doc/latest/tutorials/09_frida_lief.html)
+
 ## Development
 
 ### Build and run
