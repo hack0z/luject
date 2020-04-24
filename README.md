@@ -75,6 +75,16 @@ $ luject -i liba.dylib lib1.dylib lib2.dyib
 $ luject -i bin lib1.so lib2.so
 ```
 
+## Example 
+
+### Inject libfrida-gadget.so to apk
+
+Use frida tools to dynamically analyze the application. For details, see: [frida](https://github.com/frida/frida)
+
+```console
+$ luject -i app.apk /tmp/libfrida-gadget.so
+```
+
 ## Development
 
 ### Build and run

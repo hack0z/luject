@@ -76,6 +76,16 @@ $ luject -i liba.dylib lib1.dylib lib2.dyib
 $ luject -i bin lib1.so lib2.so
 ```
 
+## 示例 
+
+### 注入libfrida-gadget.so到APK
+
+使用frida系列工具对app进行动态分析，相关详情见：[frida](https://github.com/frida/frida)
+
+```console
+$ luject -i app.apk /tmp/libfrida-gadget.so
+```
+
 ## 开发
 
 ### 编译运行
