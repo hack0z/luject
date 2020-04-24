@@ -47,10 +47,12 @@ end
 
 -- do inject for apk program
 function _inject_apk(inputfile, outputfile, libraries)
+    print("not implement!")
 end
 
 -- do inject for ipa program
 function _inject_ipa(inputfile, outputfile, libraries)
+    print("not implement!")
 end
 
 -- do inject
@@ -68,7 +70,12 @@ function _inject(inputfile, outputfile, libraries)
     elseif inputfile:endswith(".ipa") then
         _inject_ipa(inputfile, outputfile, libraries)
     else
-        -- TODO elf or macho program?
+        local result = try {function () return os.iorunv("file", {inputfile}) end}
+        if result and result:find("ELF", 1, true) then
+            _inject_elf(inputfile, outputfile, libraries)
+        elseif result and result:find("Mach-O", 1, true) then
+            _inject_macho(inputfile, outputfile, libraries)
+        end
     end
 end
 
