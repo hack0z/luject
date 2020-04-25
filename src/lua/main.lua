@@ -21,6 +21,7 @@ import("core.base.option")
 import("core.project.config")
 import("utils.archive")
 import("utils.ipa.resign", {alias = "ipa_resign"})
+import("private.tools.codesign")
 import("detect.sdks.find_xcode")
 import("lib.detect.find_tool")
 import("lib.detect.find_program")
@@ -198,16 +199,15 @@ end
 function _inject_app(inputfile, outputfile, libraries)
 
     -- check
-    assert(os.is_host("macosx"), "inject ipa only support for macOS!")
+    assert(is_host("macosx"), "inject ipa only support for macOS!")
 
     -- get .app directory
     os.tryrm(outputfile)
     os.cp(inputfile, outputfile)
     local appdir = outputfile
 
-    -- remove _CodeSignature
-    os.tryrm(path.join(appdir, "_CodeSignature"))
-    os.tryrm(path.join(appdir, "Contents", "_CodeSignature"))
+    -- @note remove code signature first
+    codesign.unsign(appdir)
 
     -- get binary
     local binaryfile
@@ -243,7 +243,7 @@ end
 function _inject_ipa(inputfile, outputfile, libraries)
 
     -- check
-    assert(os.is_host("macosx"), "inject ipa only support for macOS!")
+    assert(is_host("macosx"), "inject ipa only support for macOS!")
 
     -- get zip
     local zip = assert(find_tool("zip"), "zip not found!")
@@ -266,8 +266,8 @@ function _inject_ipa(inputfile, outputfile, libraries)
     -- get .app directory
     local appdir = find_directory("Payload/*.app", tmpdir)
 
-    -- remove _CodeSignature
-    os.tryrm(path.join(appdir, "_CodeSignature"))
+    -- @note remove code signature first
+    codesign.unsign(appdir)
 
     -- get binary
     local binaryfile
