@@ -17,5 +17,5 @@ jobs:
         xmake-version: branch@master
     - name: build
       run: |
-        xmake build test
+        xmake -y build test
         xmake run test
