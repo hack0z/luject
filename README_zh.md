@@ -3,6 +3,9 @@
   <h1>luject</h1>
 
   <div>
+    <a href="https://github.com/lanoox/luject/actions?query=workflow%3Abuild">
+      <img src="https://img.shields.io/github/workflow/status/lanoox/luject/build/master.svg?style=flat-square" alt="github-ci" />
+    </a>
     <a href="https://github.com/lanoox/luject/releases">
       <img src="https://img.shields.io/github/release/lanoox/luject.svg?style=flat-square" alt="Github All Releases" />
     </a>
@@ -83,8 +86,10 @@ $ luject -i bin lib1.so lib2.so
 使用frida系列工具对app进行动态分析，相关详情见：[frida](https://github.com/frida/frida)
 
 ```console
-$ luject -i app.apk libtest /tmp/libfrida-gadget.so
+$ luject -i app.apk -p libtest /tmp/libfrida-gadget.so
 ```
+
+其中，libtest是指定apk中需要匹配注入的so库，并且支持模式匹配实现批量注入，例如：libtest_*.so，如果不指定`-p`参数，默认多所有so进行批量全注入。
 
 参考文档: [How to use frida on a non-rooted device](https://lief.quarkslab.com/doc/latest/tutorials/09_frida_lief.html)
 

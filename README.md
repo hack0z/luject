@@ -2,6 +2,9 @@
   <h1>luject</h1>
 
   <div>
+    <a href="https://github.com/lanoox/luject/actions?query=workflow%3Abuild">
+      <img src="https://img.shields.io/github/workflow/status/lanoox/luject/build/master.svg?style=flat-square" alt="github-ci" />
+    </a>
     <a href="https://github.com/lanoox/luject/releases">
       <img src="https://img.shields.io/github/release/lanoox/luject.svg?style=flat-square" alt="Github All Releases" />
     </a>
@@ -84,6 +87,9 @@ Use frida tools to dynamically analyze the application. For details, see: [frida
 ```console
 $ luject -i app.apk -p libtest /tmp/libfrida-gadget.so
 ```
+
+libtest is a so library that requires matching injection in the apk, and supports pattern matching to achieve batch injection, for example: `libtest_*.so`, 
+if you do not specify the `-p` parameter, all so are defaulted for batch full injection.
 
 refs: [How to use frida on a non-rooted device](https://lief.quarkslab.com/doc/latest/tutorials/09_frida_lief.html)
 
