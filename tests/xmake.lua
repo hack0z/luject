@@ -18,7 +18,13 @@ target("add")
         os.setenv("XMAKE_PROGRAM_DIR", path.join(path.directory(luject:pkg("libxmake"):get("linkdirs")), "share", "xmake"))
 
         -- inject libsub to libadd
-        os.vrunv(luject:targetfile(), {"-i", target:targetfile(), "-o", target:targetfile(), path.filename(target:dep("sub"):targetfile())})
+        local rpathdir = ""
+        if is_plat("linux", "android") then
+            rpathdir = "$ORIGIN/"
+        elseif is_plat("macosx", "iphoneos") then
+            rpathdir = "@loader_path/"
+        end
+        os.vrunv(luject:targetfile(), {"-i", target:targetfile(), "-o", target:targetfile(), rpathdir .. path.filename(target:dep("sub"):targetfile())})
     end)
 
 target("test")
