@@ -6,7 +6,7 @@ add_requires("libxmake", "lief")
 target("luject")
     add_rules("xmake.cli")
     add_files("src/lni/*.cpp")
-    set_languages("c++11")
+    set_languages("c++14")
     add_packages("libxmake", "lief")
     add_installfiles("res/*", {prefixdir = "share/luject/res"})
 
