@@ -27,3 +27,4 @@ target("test")
     add_deps("add")
     add_deps("sub", {inherit = false}) -- we only add libadd/rpath to test
     add_files("test.c")
+

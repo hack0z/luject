@@ -194,8 +194,56 @@ function _inject_apk(inputfile, outputfile, libraries)
     _optimize_apk(outputfile)
 end
 
+-- do inject for app program
+function _inject_app(inputfile, outputfile, libraries)
+
+    -- check
+    assert(os.is_host("macosx"), "inject ipa only support for macOS!")
+
+    -- get .app directory
+    os.tryrm(outputfile)
+    os.cp(inputfile, outputfile)
+    local appdir = outputfile
+
+    -- remove _CodeSignature
+    os.tryrm(path.join(appdir, "_CodeSignature"))
+    os.tryrm(path.join(appdir, "Contents", "_CodeSignature"))
+
+    -- get binary
+    local binaryfile
+    for _, filepath in ipairs(os.files(path.join(appdir, "**"))) do
+        local results = try { function () return os.iorunv("file", {filepath}) end}
+        if results and results:find("Mach-O", 1, true) then
+            binaryfile = filepath
+            break
+        end
+    end
+    assert(binaryfile, "image file not found!")
+
+    -- inject libraries to the image file
+    local libnames = {}
+    for _, library in ipairs(libraries) do
+        table.insert(libnames, "@loader_path/" .. path.filename(library))
+    end
+    print("inject to %s", path.filename(binaryfile))
+    macho.add_libraries(binaryfile, binaryfile, libnames)
+
+    -- resign app
+    _resign_app(appdir)
+
+    -- copy libraries to .app directory
+    for _, library in ipairs(libraries) do
+        assert(os.isfile(library), "%s not found!", library)
+        print("install %s", path.filename(library))
+        os.cp(library, path.directory(binaryfile))
+    end
+end
+
 -- do inject for ipa program
 function _inject_ipa(inputfile, outputfile, libraries)
+
+    -- check
+    assert(os.is_host("macosx"), "inject ipa only support for macOS!")
 
     -- get zip
     local zip = assert(find_tool("zip"), "zip not found!")
@@ -235,7 +283,7 @@ function _inject_ipa(inputfile, outputfile, libraries)
     -- inject libraries to the image file
     local libnames = {}
     for _, library in ipairs(libraries) do
-        table.insert(libnames, path.filename(library))
+        table.insert(libnames, "@loader_path/" .. path.filename(library))
     end
     print("inject to %s", path.filename(binaryfile))
     macho.add_libraries(binaryfile, binaryfile, libnames)
@@ -244,7 +292,7 @@ function _inject_ipa(inputfile, outputfile, libraries)
     for _, library in ipairs(libraries) do
         assert(os.isfile(library), "%s not found!", library)
         print("install %s", path.filename(library))
-        os.cp(library, appdir)
+        os.cp(library, path.directory(binaryfile))
     end
 
     -- resign app
@@ -272,6 +320,8 @@ function _inject(inputfile, outputfile, libraries)
         _inject_apk(inputfile, outputfile, libraries)
     elseif inputfile:endswith(".ipa") then
         _inject_ipa(inputfile, outputfile, libraries)
+    elseif inputfile:endswith(".app") then
+        _inject_app(inputfile, outputfile, libraries)
     else
         local result = try {function () return os.iorunv("file", {inputfile}) end}
         if result and result:find("ELF", 1, true) then
@@ -313,7 +363,7 @@ function main ()
     end
 
     -- get input file
-    assert(os.isfile(inputfile), "%s not found!", inputfile)
+    assert(os.exists(inputfile), "%s not found!", inputfile)
 
     -- get output file
     local outputfile = option.get("output")
