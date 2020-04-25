@@ -9,6 +9,7 @@ if is_plat("windows") then
     elseif is_mode("debug") then
         add_cxflags("-MTd") 
     end
+    add_cxxflags("-EHsc", "-FIiso646.h")
     add_ldflags("-nodefaultlib:msvcrt.lib")
 end
 
