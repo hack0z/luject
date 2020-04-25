@@ -39,6 +39,10 @@ local options =
                                   "  e.g. ",
                                   "    - luject -i app.apk -p libtest liba.so",
                                   "    - luject -i app.apk -p 'libtest_*' liba.so"}
+
+,   {nil, "bundle_identifier", "kv", nil, "Set the bundle identifier of app/ipa"}
+,   {nil, "codesign_identity", "kv", nil, "Set the codesign identity for app/ipa"}
+,   {nil, "mobile_provision",  "kv", nil, "Set the mobile provision for app/ipa"}
 ,   {'v', "verbose",   "k",  nil, "Enable verbose output."}
 ,   {nil, "libraries", "vs", nil, "Set all injected dynamic libraries path list."}
 }
@@ -111,7 +115,7 @@ function _resign_app(appdir)
     end
 
     -- do resign
-    ipa_resign(appdir)
+    ipa_resign(appdir, option.get("codesign_identity"), option.get("mobile_provision"), option.get("bundle_identifier"))
 end 
 
 -- optimize apk
