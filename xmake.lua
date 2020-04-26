@@ -1,4 +1,4 @@
-set_xmakever("2.3.2")
+set_xmakever("2.3.3")
 
 add_rules("mode.debug", "mode.release")
 add_requires("libxmake", "lief")
