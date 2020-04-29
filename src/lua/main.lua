@@ -165,6 +165,10 @@ function _inject_apk(inputfile, outputfile, libraries)
         arch = "arm64-v8a"
     end
     local libdir = path.join(tmpdir, "lib", arch)
+    if not os.isdir(libdir) then
+        arch = "armeabi"
+        libdir = path.join(tmpdir, "lib", arch)
+    end
     assert(os.isdir(libdir), "%s not found!", libdir)
 
     -- inject libraries to 'lib/arch/*.so'
