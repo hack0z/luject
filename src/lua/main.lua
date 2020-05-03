@@ -155,15 +155,20 @@ function _inject_apk(inputfile, outputfile, libraries)
         raise("extract failed!")
     end
 
+    -- detect architecture
+    local arch
+    for _, library in ipairs(libraries) do
+        arch = os.isfile(library) and elf.detect_arch(library)
+        if arch then
+            break
+        end
+    end
+    arch = arch or "armeabi-v7a"
+    print("%s found!", arch)
+
     -- remove META-INF
     os.tryrm(path.join(tmpdir, "META-INF"))
 
-    -- get arch and library directory
-    local arch = "armeabi-v7a"
-    local result = try {function () return os.iorunv("file", {inputfile}) end}
-    if result and result:find("aarch64", 1, true) then
-        arch = "arm64-v8a"
-    end
     local libdir = path.join(tmpdir, "lib", arch)
     if not os.isdir(libdir) then
         arch = "armeabi"
@@ -177,7 +182,7 @@ function _inject_apk(inputfile, outputfile, libraries)
         table.insert(libnames, path.filename(library))
     end
     for _, libfile in ipairs(os.files(path.join(libdir, (option.get("pattern") or "*") .. ".so"))) do
-        print("inject to %s", path.filename(libfile))
+        print("inject to %s/%s", path.filename(path.directory(libfile)), path.filename(libfile))
         elf.add_libraries(libfile, libfile, libnames)
     end
 

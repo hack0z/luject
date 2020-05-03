@@ -100,6 +100,45 @@ static tb_int_t lni_elf_add_libraries(lua_State* lua)
     return 1;
 }
 
+// elf.detect_arch("libx.so")
+static tb_int_t lni_elf_detect_arch(lua_State* lua)
+{
+    try 
+    {
+        // get arguments
+        tb_char_t const* inputfile = luaL_checkstring(lua, 1);
+        if (!inputfile) throw "invalid arguments!";
+
+        // get arch
+        auto elf_binary = std::unique_ptr<LIEF::ELF::Binary>{LIEF::ELF::Parser::parse(inputfile)};
+        switch (elf_binary->header().machine_type())
+        {
+        case LIEF::ELF::ARCH::EM_AARCH64:
+            lua_pushliteral(lua, "arm64-v8a");
+            break;
+        case LIEF::ELF::ARCH::EM_ARM:
+            lua_pushliteral(lua, "armeabi-v7a");
+            break;
+        case LIEF::ELF::ARCH::EM_X86_64:
+            lua_pushliteral(lua, "x86_64");
+            break;
+        case LIEF::ELF::ARCH::EM_386:
+            lua_pushliteral(lua, "x86");
+            break;
+        default:
+            lua_pushliteral(lua, "armeabi");
+            break;
+        }
+    }
+    catch (std::exception const& e) 
+    {
+        lua_pushnil(lua);
+        lua_pushstring(lua, e.what());
+        return 2;
+    }
+    return 1;
+}
+
 // macho.add_libraries("libx.so", {"liba.dylib", "libb.dylib"})
 static tb_int_t lni_macho_add_libraries(lua_State* lua)
 {
@@ -154,6 +193,7 @@ static tb_void_t lni_initalizer(xm_engine_ref_t engine, lua_State* lua)
     static luaL_Reg const lni_elf_funcs[] = 
     {
         {"add_libraries", lni_elf_add_libraries}
+    ,   {"detect_arch",   lni_elf_detect_arch}
     ,   {tb_null, tb_null}
     };
     xm_engine_register(engine, "elf", lni_elf_funcs);
