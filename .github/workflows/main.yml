@@ -15,7 +15,17 @@ jobs:
     - uses: xmake-io/github-action-setup-xmake@v1
       with:
         xmake-version: branch@master
-    - name: build
+    - name: test
       run: |
         xmake build -y test
         xmake run test
+    - name: artifact
+      run: |
+        xmake -y
+        xmake install -o build/luject
+        cd build/luject
+        zip luject-${{matrix.os}}.zip -r .
+    - uses: actions/upload-artifact@v2
+      with:
+        name: my-artifact
+        path: build/luject/luject-${{matrix.os}}.zip
