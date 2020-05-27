@@ -23,9 +23,10 @@ jobs:
       run: |
         xmake -y
         xmake install -o build/luject
-        cd build/luject
-        zip luject-${{matrix.os}}.zip -r .
+    - uses: montudor/action-zip@v0.1.0
+      with:
+        args: zip -qq -r ./build/luject.zip ./build/luject
     - uses: actions/upload-artifact@v2
       with:
-        name: my-artifact
-        path: build/luject/luject-${{matrix.os}}.zip
+        name: luject-${{matrix.os}}.zip
+        path: build/luject.zip
