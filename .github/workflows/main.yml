@@ -23,11 +23,7 @@ jobs:
       run: |
         xmake -y
         xmake install -o build/luject
-    - uses: papeloto/action-zip@v1
-      with:
-        files: build/luject
-        dest: build/luject.zip
     - uses: actions/upload-artifact@v2
       with:
-        name: luject-${{matrix.os}}.zip
-        path: build/luject.zip
+        name: luject-${{matrix.os}}
+        path: build/luject
