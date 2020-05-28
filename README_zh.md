@@ -40,7 +40,7 @@ luject是一个可以将动态库静态注入到指定应用程序包的工具�
 
 * Android APK
 * iPhoneOS IPA 
-* Windows可执行程序
+* Windows可执行程序 (还不支持)
 * MacOS可执行程序
 * Linux可执行程序
 

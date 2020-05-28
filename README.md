@@ -39,7 +39,7 @@ luject is a static injector of dynamic library for application. It support the f
 
 * Android APK
 * iPhoneOS IPA
-* Windows Program
+* Windows Program (does not supported yet)
 * Linux Program
 * MacOS Program
 

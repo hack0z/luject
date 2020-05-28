@@ -51,7 +51,13 @@ static tb_int_t lni_pe_add_libraries(lua_State* lua)
                 if (library) pe_binary->add_library(library);
                 lua_pop(lua, 1);
             }
-            pe_binary->write(outputfile);
+#if 1
+            // TODO it will crash
+            LIEF::PE::Builder builder{pe_binary.get()};
+            builder.build_imports(true).patch_imports(true).build_tls(false).build_resources(false);//.build_relocations(true);
+            builder.build();
+            builder.write(outputfile);
+#endif
         }
     }
     catch (std::exception const& e) 
