@@ -1,13 +1,13 @@
 set_xmakever("2.3.3")
 
 add_rules("mode.debug", "mode.release")
-add_requires("libxmake", "lief")
+add_requires("libxmake", "lief 0.11.5")
 
-if is_plat("windows") then 
+if is_plat("windows") then
     if is_mode("release") then
-        add_cxflags("-MT") 
+        add_cxflags("-MT")
     elseif is_mode("debug") then
-        add_cxflags("-MTd") 
+        add_cxflags("-MTd")
     end
     add_cxxflags("-EHsc", "-FIiso646.h")
     add_ldflags("-nodefaultlib:msvcrt.lib")
