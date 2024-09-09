@@ -18,9 +18,9 @@ target("add")
 
         -- inject libsub to libadd
         local rpathdir = ""
-        if is_plat("linux", "android") then
+        if target:is_plat("linux", "android") then
             rpathdir = "$ORIGIN/"
-        elseif is_plat("macosx", "iphoneos") then
+        elseif target:is_plat("macosx", "iphoneos") then
             rpathdir = "@loader_path/"
         end
         os.vrunv(luject:targetfile(), {"-i", target:targetfile(), "-o", target:targetfile(), rpathdir .. path.filename(target:dep("sub"):targetfile())})
