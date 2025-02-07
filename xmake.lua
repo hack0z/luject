@@ -1,4 +1,4 @@
-set_xmakever("2.3.3")
+set_xmakever("2.9.8")
 
 add_rules("mode.debug", "mode.release")
 add_requires("libxmake", "lief 0.11.5")
@@ -16,6 +16,7 @@ end
 target("luject")
     add_rules("xmake.cli")
     add_files("src/lni/*.cpp")
+    add_files("src/lua/*.lua", {rootdir = "src"})
     set_languages("c++14")
     add_packages("libxmake", "lief")
     add_installfiles("res/*", {prefixdir = "share/luject/res"})

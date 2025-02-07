@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Copyright (C) 2020-present, TBOOX Open Source Group.
  *
  * @author      ruki
@@ -30,17 +30,26 @@ extern "C"{
  * private implemention
  */
 
+static tb_byte_t const g_luafiles_data[] = {
+    #include "luafiles.xmz.h"
+};
+
+static tb_int_t lni_test_hello(lua_State* lua) {
+    lua_pushliteral(lua, "hello xmake!");
+    return 1;
+}
+
 // pe.add_libraries("x.dll", {"a.dll", "b.dll"})
 static tb_int_t lni_pe_add_libraries(lua_State* lua)
 {
-    try 
+    try
     {
         // get arguments
         tb_char_t const* inputfile = luaL_checkstring(lua, 1);
         tb_char_t const* outputfile = luaL_checkstring(lua, 2);
         if (!inputfile || !outputfile || !lua_istable(lua, 3)) throw "invalid arguments!";
 
-        // add libraries 
+        // add libraries
         tb_size_t n = lua_objlen(lua, 3);
         if (n > 0)
         {
@@ -62,7 +71,7 @@ static tb_int_t lni_pe_add_libraries(lua_State* lua)
 #endif
         }
     }
-    catch (std::exception const& e) 
+    catch (std::exception const& e)
     {
         lua_pushboolean(lua, tb_false);
         lua_pushstring(lua, e.what());
@@ -75,14 +84,14 @@ static tb_int_t lni_pe_add_libraries(lua_State* lua)
 // elf.add_libraries("libx.so", {"liba.so", "libb.so"})
 static tb_int_t lni_elf_add_libraries(lua_State* lua)
 {
-    try 
+    try
     {
         // get arguments
         tb_char_t const* inputfile = luaL_checkstring(lua, 1);
         tb_char_t const* outputfile = luaL_checkstring(lua, 2);
         if (!inputfile || !outputfile || !lua_istable(lua, 3)) throw "invalid arguments!";
 
-        // add libraries 
+        // add libraries
         tb_size_t n = lua_objlen(lua, 3);
         if (n > 0)
         {
@@ -98,7 +107,7 @@ static tb_int_t lni_elf_add_libraries(lua_State* lua)
             elf_binary->write(outputfile);
         }
     }
-    catch (std::exception const& e) 
+    catch (std::exception const& e)
     {
         lua_pushboolean(lua, tb_false);
         lua_pushstring(lua, e.what());
@@ -111,7 +120,7 @@ static tb_int_t lni_elf_add_libraries(lua_State* lua)
 // elf.detect_arch("libx.so")
 static tb_int_t lni_elf_detect_arch(lua_State* lua)
 {
-    try 
+    try
     {
         // get arguments
         tb_char_t const* inputfile = luaL_checkstring(lua, 1);
@@ -138,7 +147,7 @@ static tb_int_t lni_elf_detect_arch(lua_State* lua)
             break;
         }
     }
-    catch (std::exception const& e) 
+    catch (std::exception const& e)
     {
         lua_pushnil(lua);
         lua_pushstring(lua, e.what());
@@ -150,14 +159,14 @@ static tb_int_t lni_elf_detect_arch(lua_State* lua)
 // macho.add_libraries("libx.so", {"liba.dylib", "libb.dylib"})
 static tb_int_t lni_macho_add_libraries(lua_State* lua)
 {
-    try 
+    try
     {
         // get arguments
         tb_char_t const* inputfile = luaL_checkstring(lua, 1);
         tb_char_t const* outputfile = luaL_checkstring(lua, 2);
         if (!inputfile || !outputfile || !lua_istable(lua, 3)) throw "invalid arguments!";
 
-        // add libraries 
+        // add libraries
         tb_size_t n = lua_objlen(lua, 3);
         if (n > 0)
         {
@@ -176,7 +185,7 @@ static tb_int_t lni_macho_add_libraries(lua_State* lua)
             macho_binary->write(outputfile);
         }
     }
-    catch (std::exception const& e) 
+    catch (std::exception const& e)
     {
         lua_pushboolean(lua, tb_false);
         lua_pushstring(lua, e.what());
@@ -190,7 +199,7 @@ static tb_int_t lni_macho_add_libraries(lua_State* lua)
 static tb_void_t lni_initalizer(xm_engine_ref_t engine, lua_State* lua)
 {
     // register pe module
-    static luaL_Reg const lni_pe_funcs[] = 
+    static luaL_Reg const lni_pe_funcs[] =
     {
         {"add_libraries", lni_pe_add_libraries}
     ,   {tb_null, tb_null}
@@ -198,7 +207,7 @@ static tb_void_t lni_initalizer(xm_engine_ref_t engine, lua_State* lua)
     xm_engine_register(engine, "pe", lni_pe_funcs);
 
     // register elf module
-    static luaL_Reg const lni_elf_funcs[] = 
+    static luaL_Reg const lni_elf_funcs[] =
     {
         {"add_libraries", lni_elf_add_libraries}
     ,   {"detect_arch",   lni_elf_detect_arch}
@@ -207,12 +216,13 @@ static tb_void_t lni_initalizer(xm_engine_ref_t engine, lua_State* lua)
     xm_engine_register(engine, "elf", lni_elf_funcs);
 
     // register macho module
-    static luaL_Reg const lni_macho_funcs[] = 
+    static luaL_Reg const lni_macho_funcs[] =
     {
         {"add_libraries", lni_macho_add_libraries}
     ,   {tb_null, tb_null}
     };
     xm_engine_register(engine, "macho", lni_macho_funcs);
+    xm_engine_add_embedfiles(engine, g_luafiles_data, sizeof(g_luafiles_data));
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
